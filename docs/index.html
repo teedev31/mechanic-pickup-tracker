@@ -1,1 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Customer Check‑In • Dropoff / Pickup</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
+<style>
+  .container{max-width:820px;margin:0 auto}
+  .flex{display:flex;gap:12px;flex-wrap:wrap}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:720px){.row2{grid-template-columns:1fr}}
+  .badge{display:inline-flex;align-items:center;gap:6px;padding:.25rem .5rem;border:1px solid #e5e7eb;border-radius:999px;font-size:.85rem}
+  .ok{color:#05603a}
+  .err{color:#9b1c1c}
+  .muted{opacity:.7}
+  .header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>Customer Check‑In</h2>
+      <span class="badge"><span data-feather="clipboard"></span> Dropoff / Pickup</span>
+    </div>
+    <p class="muted">Fast intake so the front desk stays calm during rush. Fields with * are required.</p>
 
+    <form id="f">
+      <label for="visit_type">Visit Type *</label>
+      <select id="visit_type" name="visit_type" required>
+        <option>Dropoff</option>
+        <option>Pickup</option>
+      </select>
+
+      <div class="row2">
+        <div>
+          <label for="customer_name">Customer Name *</label>
+          <input id="customer_name" name="customer_name" required placeholder="Jane Smith">
+        </div>
+        <div>
+          <label for="phone">Phone</label>
+          <input id="phone" name="phone" placeholder="(555) 555‑1234">
+        </div>
+      </div>
+
+      <div class="row2">
+        <div>
+          <label for="vehicle">Vehicle (Make Model Year)</label>
+          <input id="vehicle" name="vehicle" placeholder="Toyota Camry 2015">
+        </div>
+        <div>
+          <label for="plate">Plate</label>
+          <input id="plate" name="plate" placeholder="ABC‑1234">
+        </div>
+      </div>
+
+      <div class="row2">
+        <div>
+          <label for="waiting">Waiting?</label>
+          <select id="waiting" name="waiting"><option>No</option><option>Yes</option></select>
+        </div>
+        <div>
+          <label for="shuttle">Shuttle?</label>
+          <select id="shuttle" name="shuttle"><option>No</option><option>Yes</option></select>
+        </div>
+      </div>
+
+      <label for="notes">Notes</label>
+      <textarea id="notes" name="notes" rows="3" placeholder="Any special instructions…"></textarea>
+
+      <div class="flex">
+        <button type="submit"><span data-feather="check-circle"></span> Submit</button>
+        <button type="reset" class="secondary"><span data-feather="rotate-ccw"></span> Reset</button>
+      </div>
+      <p id="msg" class="muted"></p>
+    </form>
+  </div>
+
+<script src="https://unpkg.com/feather-icons"></script>
+<script>feather.replace()</script>
+<script>
+const WEBAPP = "YOUR_APPS_SCRIPT_WEB_APP_URL";
+const f = document.getElementById('f');
+const msg = document.getElementById('msg');
+
+f.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  msg.textContent = 'Submitting…';
+  msg.className = 'muted';
+  const data = Object.fromEntries(new FormData(f).entries());
+  try{
+    const res = await fetch(WEBAPP, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data)});
+    const j = await res.json();
+    if(j.ok){
+      msg.textContent = 'Saved — customer checked in.';
+      msg.className = 'ok';
+      f.reset(); window.scrollTo(0,0);
+    }else{
+      msg.textContent = 'Error: ' + (j.error || 'Unknown');
+      msg.className = 'err';
+    }
+  }catch(err){
+    msg.textContent = 'Network error. Please try again.';
+    msg.className = 'err';
+  }
+});
+</script>
+</body>
+</html>
